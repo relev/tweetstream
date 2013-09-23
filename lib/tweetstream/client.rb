@@ -37,6 +37,8 @@ module TweetStream
                         :status_withheld,
                         :user_withheld].freeze unless defined?(OPTION_CALLBACKS)
 
+    STREAM_OPTIONS = [:language].freeze  unless defined?(STREAM_OPTIONS)
+
     # @private
     attr_accessor *Configuration::VALID_OPTIONS_KEYS
     attr_accessor :options
@@ -376,16 +378,22 @@ module TweetStream
       end
     end
 
+    # return the given 'options' merged with values from self.options, whose keys are in 'options_list'
+    def merge_options(options,options_list)
+      options_list.inject(options) { |res,o| v = self.options[o]; v.nil? ? res : res.merge( o => v ) }
+    end
+
     # connect to twitter while starting a new EventMachine run loop
     def start(path, query_parameters = {}, &block)
+      params = merge_options(query_parameters, STREAM_OPTIONS)
       if EventMachine.reactor_running?
-        connect(path, query_parameters, &block)
+        connect(path, params, &block)
       else
         EventMachine.epoll
         EventMachine.kqueue
 
         EventMachine::run do
-          connect(path, query_parameters, &block)
+          connect(path, params, &block)
         end
       end
     end
