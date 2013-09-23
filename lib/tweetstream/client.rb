@@ -38,6 +38,7 @@ module TweetStream
                         :user_withheld].freeze unless defined?(OPTION_CALLBACKS)
 
     STREAM_OPTIONS = [:language].freeze  unless defined?(STREAM_OPTIONS)
+    FILTER_OPTIONS = [:locations].freeze unless defined?(FILTER_OPTIONS)
 
     # @private
     attr_accessor *Configuration::VALID_OPTIONS_KEYS
@@ -129,7 +130,8 @@ module TweetStream
     # method is provided separately for cases when it would conserve the
     # number of HTTP connections to combine track and follow.
     def filter(query_params = {}, &block)
-      start('/1.1/statuses/filter.json', query_params.merge(:method => :post), &block)
+      params = merge_options(query_params.merge(:method => :post), FILTER_OPTIONS)
+      start('/1.1/statuses/filter.json', params, &block)
     end
 
     # Make a call to the userstream api for currently authenticated user
